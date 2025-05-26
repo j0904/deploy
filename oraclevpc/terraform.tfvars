@@ -1,5 +1,0 @@
-compartment_ocid = "<YOUR_COMPARTMENT_OCID>"
-vcn_cidr         = "10.0.0.0/16"
-vcn_display_name = "my-oracle-vcn"
-subnet_cidr      = "10.0.1.0/24"
-subnet_display_name = "my-oracle-subnet"
