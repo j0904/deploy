@@ -2,26 +2,17 @@ version: '3.8'
 
 services:
   pds:
-    image: bluesky_pds:latest
+    image: ghcr.io/bluesky-social/pds:0.4
     env_file:
       - .env
     expose:
       - "8000"
-    environment:
-      - PDS_BASE_URL=http://pds:8000
-      - PDS_HOSTNAME=${PDS_HOSTNAME}
-      - PDS_PUBLIC_URL=https://${PDS_HOSTNAME}
-      - PDS_DATABASE_URL=postgresql://${PDS_DB_USER}:${PDS_DB_PASSWORD}@db:5432/${PDS_DB_NAME}
-      - PDS_BLOB_STORE=s3
-      - PDS_BLOB_STORE_S3_ENDPOINT=http://minio:9000
-      - PDS_BLOB_STORE_S3_BUCKET=pds-blobs
-      - PDS_BLOB_STORE_S3_ACCESS_KEY_ID=minioadmin
-      - PDS_BLOB_STORE_S3_SECRET_ACCESS_KEY=minioadmin
     depends_on:
       - db
       - minio
     volumes:
-      - pds_data:/usr/src/app/data
+      - pds_data:/pds
+
 
   appview:
     image: bluesky_appview:latest
@@ -29,22 +20,10 @@ services:
       - .env
     expose:
       - "8001"
-    environment:
-      - APPVIEW_BASE_URL=http://appview:8001
-      - APPVIEW_PDS_URL=http://pds:8000
-      - APPVIEW_DATABASE_URL=postgresql://${APPVIEW_DB_USER}:${APPVIEW_DB_PASSWORD}@db:5432/${APPVIEW_DB_NAME}
-      - APPVIEW_DATAPLANE_URL=https://${APPVIEW_HOSTNAME}
-      - PDS_PUBLIC_URL=https://${PDS_HOSTNAME}
-      - APPVIEW_BLOB_STORE=s3
-      - APPVIEW_BLOB_STORE_S3_ENDPOINT=http://minio:9000
-      - APPVIEW_BLOB_STORE_S3_BUCKET=appview-blobs
-      - APPVIEW_BLOB_STORE_S3_ACCESS_KEY_ID=minioadmin
-      - APPVIEW_BLOB_STORE_S3_SECRET_ACCESS_KEY=minioadmin
     depends_on:
       - db
-      - minio
     volumes:
-      - appview_data:/usr/src/app/data
+      - /data/vm/bluesky/appview_data:/usr/src/app/data
 
   social-app:
     image: bluesky_social-app:latest
@@ -70,24 +49,13 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
+      - /data/vm/bluesky/caddy_data:/data
+      - /data/vm/bluesky/caddy_config:/config
     depends_on:
       - pds
       - appview
       - social-app
-
-  db:
-    image: postgres:15
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_USER=${PDS_DB_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_SHARED_PASSWORD}
-      - POSTGRES_DB=${PDS_DB_NAME}
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
+ 
   minio:
     image: minio/minio
     env_file:
@@ -100,7 +68,19 @@ services:
       - MINIO_ROOT_PASSWORD=minioadmin
     command: server /data --console-address ":9001"
     volumes:
-      - minio_data:/data
+      - /data/vm/bluesky/minio_data:/data
+
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${PDS_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_SHARED_PASSWORD}
+      - POSTGRES_DB=${PDS_DB_NAME}
+    volumes:
+      -  /data/vm/bluesky/db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
 volumes:
   pds_data:
@@ -109,3 +89,9 @@ volumes:
   minio_data:
   caddy_data:
   caddy_config:
+  vm_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/vm
+      o: bind

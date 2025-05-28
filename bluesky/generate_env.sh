@@ -15,26 +15,7 @@ generate_random_hex() {
 }
 
 # --- Helper function to generate PDS PLC Rotation Key ---
-generate_plc_rotation_key() {
-    local key_file="temp_pds_plc_rotation_key.pem"
-    echo "Generating PDS PLC Rotation Key (K256 Private Key Hex)..."
-    # Generate key pair, suppress verbose output
-    if ! /usr/bin/openssl ecparam -name prime256v1 -genkey -noout -out "$key_file" >/dev/null 2>&1; then
-        echo "ERROR: Failed to generate EC key pair for PLC." >&2
-        rm -f "$key_file"
-        exit 1
-    fi
-    # Extract private key hex
-    local hex_key
-    hex_key=$(/usr/bin/openssl ec -in "$key_file" -text -noout 2>/dev/null | grep priv -A 3 | tail -n +2 | tr -d '[:space:]:' | sed 's/^00//')
-    rm -f "$key_file" # Clean up temporary file
-
-    if [ -z "$hex_key" ]; then
-        echo "ERROR: Failed to extract PLC private key hex." >&2
-        exit 1
-    fi
-    echo "$hex_key"
-}
+GENERATE_K256_PRIVATE_KEY_CMD="openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32"
 
 # Check for openssl
 # The openssl command is explicitly called with its full path, so no need to check if it's in PATH.
@@ -74,9 +55,11 @@ echo "--- PDS Specific Settings ---"
 PDS_PORT_INTERNAL="3001"
 echo "Generating PDS JWT Secret..."
 PDS_JWT_SECRET=$(generate_random_hex 32)
-PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX=$(generate_plc_rotation_key)
+PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX=$(eval "${GENERATE_K256_PRIVATE_KEY_CMD}")
 PDS_ADMIN_PASSWORD=${PDS_ADMIN_PASSWORD_INPUT:-$(generate_random_hex 16)} 
 PDS_SERVICE_DID="did:web:${PDS_HOSTNAME}"
+
+ 
 
 echo
 echo "--- AppView Specific Settings ---"
@@ -111,9 +94,20 @@ PDS_JWT_SECRET=${PDS_JWT_SECRET}
 PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX=${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX}
 PDS_ADMIN_PASSWORD=${PDS_ADMIN_PASSWORD}
 PDS_SERVICE_DID=${PDS_SERVICE_DID}
-# PDS_INVITE_REQUIRED=false # Set to "true" to require invite codes for new accounts
-# PDS_PLC_URL=https://plc.directory # Official PLC directory
-# PDS_CRAWLERS="did:web:bsky.network" # Add your appview DID later: "did:web:bsky.network \${BSKY_APPVIEW_SERVICE_DID}"
+
+PDS_DATA_DIRECTORY=/pds
+PDS_BLOBSTORE_DISK_LOCATION=/pds/blocks
+PDS_BLOB_UPLOAD_LIMIT=52428800
+PDS_DID_PLC_URL=https://plc.directory
+PDS_BSKY_APP_VIEW_URL=https://api.bsky.app
+PDS_BSKY_APP_VIEW_DID=did:web:api.bsky.app
+PDS_REPORT_SERVICE_URL=https://mod.bsky.app
+PDS_REPORT_SERVICE_DID=did:plc:ar7c4by46qjdydhdevvrndac
+PDS_CRAWLERS=https://bsky.network
+LOG_ENABLED=true
+PDS_INVITE_REQUIRED=false
+
+
 
 # --- AppView Settings ---
 APPVIEW_DB_USER=${APPVIEW_DB_USER}
@@ -123,13 +117,14 @@ APPVIEW_PORT_INTERNAL=${APPVIEW_PORT_INTERNAL}
 
 BSKY_APPVIEW_JWT_SECRET=${BSKY_APPVIEW_JWT_SECRET}
 BSKY_APPVIEW_SERVICE_DID=${BSKY_APPVIEW_SERVICE_DID}
-# BSKY_APPVIEW_DID_PLC_URL=https://plc.directory
 
 # --- Social App Settings ---
 SOCIAL_APP_PORT_INTERNAL=${SOCIAL_APP_PORT_INTERNAL}
 
 # --- Database common ---
 POSTGRES_SHARED_PASSWORD=${POSTGRES_SHARED_PASSWORD}
+
+
 EOF
 
 echo

@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug PDS Server",
+      "envFile": "${workspaceFolder}/packages/pds/.env",
+      "program": "${workspaceFolder}/packages/pds/dist/server.js",
+      "cwd": "${workspaceFolder}/packages/pds",
+      "runtimeExecutable": "/home/jcui/.nvm/versions/node/v20.19.2/bin/node",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Dev Env",
+      "cwd": "${workspaceFolder}/packages/dev-env",
+      "runtimeExecutable": "${workspaceFolder}/build/env.sh",
+      "runtimeArgs": ["node", "--enable-source-maps", "dist/bin.js"],
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  ]
+}
