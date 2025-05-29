@@ -1,3 +1,4 @@
-oraclevm/.terraform/
+*/.terraform/
+*/.terraform.lock.hcl
 bluesky/.env
-bluesky/.env
+
