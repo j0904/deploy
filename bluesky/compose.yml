@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  caddy:
+    container_name: caddy
+    image: caddy:2
+    network_mode: host
+    depends_on:
+      - pds
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /pds/caddy/data
+        target: /data
+      - type: bind
+        source: /pds/caddy/etc/caddy
+        target: /etc/caddy
+  pds:
+    container_name: pds
+    image: ghcr.io/bluesky-social/pds:0.4
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /pds
+        target: /pds
+    env_file:
+      - /pds/pds.env
+
+
+  appview:
+    image:  ghcr.io/bluesky-social/atproto:bsky-cb8bf1838f7d9df159f88a2d38dfdc9596e26650
+    env_file:
+      - /pds/pds.env
+    expose:
+      - "8001"
+
+    volumes:
+      - /data/vm/bluesky/appview_data:/usr/src/app/data
+
+  social-app:
+    image: ghcr.io/j0904/social-app:bskyweb-e716d8c28b617d4ebd8477681c178a0c3d87b851
+    env_file:
+      - /pds/pds.env
+    expose:
+      - "8000"
+    environment:
+      - REACT_APP_PDS_URL=https://${PDS_HOSTNAME}
+      - REACT_APP_BSKY_APPVIEW_URL=https://${APPVIEW_HOSTNAME}
+
+
+ 
