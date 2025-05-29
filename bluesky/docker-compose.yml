@@ -5,17 +5,19 @@ services:
     image: ghcr.io/bluesky-social/pds:0.4
     env_file:
       - .env
+    environment:
+      - PDS_DATABASE_URL=postgresql://${PDS_DB_USER}:${PDS_DB_PASSWORD}@db:5432/${PDS_DB_NAME}
     expose:
       - "8000"
     depends_on:
-      - db
-      - minio
+      db:
+        condition: service_healthy
     volumes:
-      - pds_data:/pds
+      - /data/vm/bluesky/pds:/pds
 
 
   appview:
-    image: bluesky_appview:latest
+    image:  ghcr.io/bluesky-social/atproto:bsky-cb8bf1838f7d9df159f88a2d38dfdc9596e26650
     env_file:
       - .env
     expose:
@@ -26,7 +28,7 @@ services:
       - /data/vm/bluesky/appview_data:/usr/src/app/data
 
   social-app:
-    image: bluesky_social-app:latest
+    image: ghcr.io/j0904/social-app:bskyweb-e716d8c28b617d4ebd8477681c178a0c3d87b851
     env_file:
       - .env
     expose:
@@ -56,20 +58,6 @@ services:
       - appview
       - social-app
  
-  minio:
-    image: minio/minio
-    env_file:
-      - .env
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin
-    command: server /data --console-address ":9001"
-    volumes:
-      - /data/vm/bluesky/minio_data:/data
-
   db:
     image: postgres:15
     restart: unless-stopped
@@ -81,17 +69,7 @@ services:
       -  /data/vm/bluesky/db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PDS_DB_USER} -d ${PDS_DB_NAME}"]
 
-volumes:
-  pds_data:
-  appview_data:
-  db_data:
-  minio_data:
-  caddy_data:
-  caddy_config:
-  vm_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: /data/vm
-      o: bind
+ 
