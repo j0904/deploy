@@ -30,3 +30,14 @@ sudo chmod 777 /data/vm
 curl https://pds.bigt.ai/xrpc/_health
 
 wsdump "wss://pds.bigt.ai/xrpc/com.atproto.sync.subscribeRepos?cursor=0"
+pds.bigt.ai {
+  reverse_proxy pds:8000
+}
+
+appview.bigt.ai {
+  reverse_proxy appview:8001
+}
+
+social.bigt.ai {
+  reverse_proxy social-app:3000
+}
