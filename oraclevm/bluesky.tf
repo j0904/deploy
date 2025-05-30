@@ -1,5 +1,5 @@
 # Software installation within WebServer Instance
-resource "null_resource" "bigtappWebserver1HTTPD" {
+resource "null_resource" "bluesky" {
   depends_on = [oci_core_instance.bigtappWebserver1]
   triggers = {
     instance_id = oci_core_instance.bigtappWebserver1.id
@@ -13,9 +13,12 @@ resource "null_resource" "bigtappWebserver1HTTPD" {
       timeout     = "10m"
     }
     inline = [
-        #   Install bluesky
-      "curl https://raw.githubusercontent.com/bluesky-social/pds/main/installer.sh >installer.sh",
-      "sudo bash installer.sh"
+        # 1. Install 
+      "sudo curl https://raw.githubusercontent.com/j0904/deploy/main/bluesky/installer.sh >installer.sh",
+
+      # 2. #
+      "sudo bash installer.sh  " ,
+ 
     ]
   }
 }
