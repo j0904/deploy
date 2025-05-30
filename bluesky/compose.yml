@@ -36,7 +36,7 @@ services:
       - "8001"
 
     volumes:
-      - /data/vm/bluesky/appview_data:/usr/src/app/data
+      -  /pds/appview_data:/usr/src/app/data
 
   social-app:
     image: ghcr.io/j0904/social-app:bskyweb-e716d8c28b617d4ebd8477681c178a0c3d87b851

@@ -16,7 +16,7 @@ GENERATE_SECURE_SECRET_CMD="openssl rand --hex 16"
 GENERATE_K256_PRIVATE_KEY_CMD="openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32"
 
 # The Docker compose file.
-COMPOSE_URL="https://raw.githubusercontent.com/bluesky-social/pds/main/compose.yaml"
+COMPOSE_URL="https://raw.githubusercontent.com/j0904/deploy/main/compose.yaml"
 
 # The pdsadmin script.
 PDSADMIN_URL="https://raw.githubusercontent.com/bluesky-social/pds/main/pdsadmin.sh"
@@ -48,8 +48,8 @@ METADATA_URLS+=("http://169.254.169.254/2021-03-23/meta-data/public-ipv4") # AWS
 METADATA_URLS+=("http://169.254.169.254/hetzner/v1/metadata/public-ipv4") # Hetzner
 
 PDS_DATADIR="${1:-/pds}"
-PDS_HOSTNAME="${2:-}"
-PDS_ADMIN_EMAIL="${3:-}"
+PDS_HOSTNAME="${2:-pds.bigt.ai}"
+PDS_ADMIN_EMAIL="${3:-pds@bigt.ai}"
 PDS_DID_PLC_URL="https://plc.directory"
 PDS_BSKY_APP_VIEW_URL="https://api.bsky.app"
 PDS_BSKY_APP_VIEW_DID="did:web:api.bsky.app"
@@ -313,12 +313,29 @@ DOCKERD_CONFIG
 	}
 }
 
-*.${PDS_HOSTNAME}, ${PDS_HOSTNAME} {
+ 
+pds.bigt.ai {
 	tls {
 		on_demand
 	}
-	reverse_proxy http://localhost:3000
+  reverse_proxy pds:3000
 }
+
+appview.bigt.ai {
+	tls {
+		on_demand
+	}
+  reverse_proxy appview:8001
+}
+
+social.bigt.ai {
+	tls {
+		on_demand
+	}
+  reverse_proxy social-app:8000
+}
+
+
 CADDYFILE
 
   #
@@ -341,6 +358,7 @@ PDS_REPORT_SERVICE_URL=${PDS_REPORT_SERVICE_URL}
 PDS_REPORT_SERVICE_DID=${PDS_REPORT_SERVICE_DID}
 PDS_CRAWLERS=${PDS_CRAWLERS}
 LOG_ENABLED=true
+PDS_INVITE_REQUIRED=false
 PDS_CONFIG
 
   #
