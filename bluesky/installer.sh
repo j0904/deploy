@@ -16,7 +16,7 @@ GENERATE_SECURE_SECRET_CMD="openssl rand --hex 16"
 GENERATE_K256_PRIVATE_KEY_CMD="openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32"
 
 # The Docker compose file.
-COMPOSE_URL="https://raw.githubusercontent.com/j0904/deploy/main/compose.yaml"
+COMPOSE_URL="https://raw.githubusercontent.com/j0904/deploy/main/bluesky/compose.yml"
 
 # The pdsadmin script.
 PDSADMIN_URL="https://raw.githubusercontent.com/bluesky-social/pds/main/pdsadmin.sh"
@@ -96,6 +96,8 @@ function main {
     elif [[ "${DISTRIB_CODENAME}" == "mantic" ]]; then
       SUPPORTED_OS="true"
       echo "* Detected supported distribution Ubuntu 23.10 LTS"
+    elif [[ "${DISTRIB_CODENAME}" == "noble" ]]; then
+      SUPPORTED_OS="true"
     fi
   elif [[ "${DISTRIB_ID}" == "debian" ]]; then
     if [[ "${DISTRIB_CODENAME}" == "bullseye" ]]; then
@@ -456,8 +458,7 @@ To see pdsadmin commands, run "pdsadmin help"
 ========================================================================
 INSTALLER_MESSAGE
 
-  CREATE_ACCOUNT_PROMPT=""
-  read -p "Create a PDS user account? (y/N): " CREATE_ACCOUNT_PROMPT
+  CREATE_ACCOUNT_PROMPT="N" 
 
   if [[ "${CREATE_ACCOUNT_PROMPT}" =~ ^[Yy] ]]; then
     pdsadmin account create
