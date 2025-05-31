@@ -97,35 +97,8 @@ function main {
   # Prompt user for required variables.
   #
  
-
-    if [[ -z "${PDS_HOSTNAME}" ]]; then
-      read -p "Enter your public DNS address (e.g. example.com): " PDS_HOSTNAME
-    fi
-  fi
-
-  if [[ -z "${PDS_HOSTNAME}" ]]; then
-    usage "No public DNS address specified"
-  fi
-
-  if [[ "${PDS_HOSTNAME}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-    usage "Invalid public DNS address (must not be an IP address)"
-  fi
-
-  # Admin email
-  if [[ -z "${PDS_ADMIN_EMAIL}" ]]; then
-    read -p "Enter an admin email address (e.g. you@example.com): " PDS_ADMIN_EMAIL
-  fi
-  if [[ -z "${PDS_ADMIN_EMAIL}" ]]; then
-    usage "No admin email specified"
-  fi
-
-  if [[ -z "${PDS_ADMIN_EMAIL}" ]]; then
-    read -p "Enter an admin email address (e.g. you@example.com): " PDS_ADMIN_EMAIL
-  fi
-  if [[ -z "${PDS_ADMIN_EMAIL}" ]]; then
-    usage "No admin email specified"
-  fi
-
+ 
+ 
   #
   # Install system packages.
   #
@@ -180,7 +153,7 @@ DOCKERD_CONFIG
   else
     echo "* Docker daemon already configured! Ensure log rotation is enabled."
   fi
-
+PDS_DATADIR=/pds
   #
   # Create data directory.
   #
@@ -266,9 +239,9 @@ SYSTEMD_UNIT_FILE
       ufw allow 443/tcp >/dev/null
     fi
   fi
- 
-
- 
+}
 
 # Run main function.
 main
+
+# End of script
