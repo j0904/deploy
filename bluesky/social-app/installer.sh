@@ -11,16 +11,10 @@ PLATFORM="$(uname --hardware-platform || true)"
 DISTRIB_CODENAME="$(lsb_release --codename --short || true)"
 DISTRIB_ID="$(lsb_release --id --short | tr '[:upper:]' '[:lower:]' || true)"
 
-# Secure generator comands
-GENERATE_SECURE_SECRET_CMD="openssl rand --hex 16"
-GENERATE_K256_PRIVATE_KEY_CMD="openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32"
-
+# 
 # The Docker compose file.
-COMPOSE_URL="https://raw.githubusercontent.com/j0904/deploy/main/bluesky/compose.yml"
-
-# The pdsadmin script.
-PDSADMIN_URL="https://raw.githubusercontent.com/bluesky-social/pds/main/pdsadmin.sh"
-
+COMPOSE_URL="https://raw.githubusercontent.com/j0904/deploy/main/bluesky/social-app/compose.yml"
+ 
 # System dependencies.
 REQUIRED_SYSTEM_PACKAGES="
   ca-certificates
@@ -39,24 +33,7 @@ REQUIRED_DOCKER_PACKAGES="
   docker-ce-cli
   docker-compose-plugin
 "
-
-PUBLIC_IP=""
-METADATA_URLS=()
-METADATA_URLS+=("http://169.254.169.254/v1/interfaces/0/ipv4/address") # Vultr
-METADATA_URLS+=("http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address") # DigitalOcean
-METADATA_URLS+=("http://169.254.169.254/2021-03-23/meta-data/public-ipv4") # AWS
-METADATA_URLS+=("http://169.254.169.254/hetzner/v1/metadata/public-ipv4") # Hetzner
-
-PDS_DATADIR="${1:-/pds}"
-PDS_HOSTNAME="${2:-pds.bigt.ai}"
-PDS_ADMIN_EMAIL="${3:-pds@bigt.ai}"
-PDS_DID_PLC_URL="https://plc.directory"
-PDS_BSKY_APP_VIEW_URL="https://api.bsky.app"
-PDS_BSKY_APP_VIEW_DID="did:web:api.bsky.app"
-PDS_REPORT_SERVICE_URL="https://mod.bsky.app"
-PDS_REPORT_SERVICE_DID="did:plc:ar7c4by46qjdydhdevvrndac"
-PDS_CRAWLERS="https://bsky.network"
-
+ 
 function usage {
   local error="${1}"
   cat <<USAGE >&2
@@ -114,93 +91,12 @@ function main {
     exit 1
   fi
 
-  # Enforce that the data directory is /pds since we're assuming it for now.
-  # Later we can make this actually configurable.
-  if [[ "${PDS_DATADIR}" != "/pds" ]]; then
-    usage "The data directory must be /pds. Exiting..."
-  fi
-
-  # Check if PDS is already installed.
-  if [[ -e "${PDS_DATADIR}/pds.sqlite" ]]; then
-    echo
-    echo "ERROR: pds is already configured in ${PDS_DATADIR}"
-    echo
-    echo "To do a clean re-install:"
-    echo "------------------------------------"
-    echo "1. Stop the service"
-    echo
-    echo "  sudo systemctl stop pds"
-    echo
-    echo "2. Delete the data directory"
-    echo
-    echo "  sudo rm -rf ${PDS_DATADIR}"
-    echo
-    echo "3. Re-run this installation script"
-      echo
-    echo "  sudo bash ${0}"
-    echo
-    echo "For assistance, check https://github.com/bluesky-social/pds"
-    exit 1
-  fi
-
-  #
-  # Attempt to determine server's public IP.
-  #
-
-  # First try using the hostname command, which usually works.
-  if [[ -z "${PUBLIC_IP}" ]]; then
-    PUBLIC_IP=$(hostname --all-ip-addresses | awk '{ print $1 }')
-  fi
-
-  # Prevent any private IP address from being used, since it won't work.
-  if [[ "${PUBLIC_IP}" =~ ^(127\.|10\.|172\.1[6-9]\.|172\.2[0-9]\.|172\.3[0-1]\.|192\.168\.) ]]; then
-    PUBLIC_IP=""
-  fi
-
-  # Check the various metadata URLs.
-  if [[ -z "${PUBLIC_IP}" ]]; then
-    for METADATA_URL in "${METADATA_URLS[@]}"; do
-      METADATA_IP="$(timeout 2 curl --silent --show-error "${METADATA_URL}" | head --lines=1 || true)"
-      if [[ "${METADATA_IP}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        PUBLIC_IP="${METADATA_IP}"
-        break
-      fi
-    done
-  fi
-
-  if [[ -z "${PUBLIC_IP}" ]]; then
-    PUBLIC_IP="Server's IP"
-  fi
-
+   
+ 
   #
   # Prompt user for required variables.
   #
-  if [[ -z "${PDS_HOSTNAME}" ]]; then
-    cat <<INSTALLER_MESSAGE
----------------------------------------
-     Add DNS Record for Public IP
----------------------------------------
-
-  From your DNS provider's control panel, create the required
-  DNS record with the value of your server's public IP address.
-
-  + Any DNS name that can be resolved on the public internet will work.
-  + Replace example.com below with any valid domain name you control.
-  + A TTL of 600 seconds (10 minutes) is recommended.
-
-  Example DNS record:
-
-    NAME                TYPE   VALUE
-    ----                ----   -----
-    example.com         A      ${PUBLIC_IP:-Server public IP}
-    *.example.com       A      ${PUBLIC_IP:-Server public IP}
-
-  **IMPORTANT**
-  It's recommended to wait 3-5 minutes after creating a new DNS record
-  before attempting to use it. This will allow time for the DNS record
-  to be fully updated.
-
-INSTALLER_MESSAGE
+ 
 
     if [[ -z "${PDS_HOSTNAME}" ]]; then
       read -p "Enter your public DNS address (e.g. example.com): " PDS_HOSTNAME
@@ -309,54 +205,22 @@ DOCKERD_CONFIG
   echo "* Creating Caddy config file"
   cat <<CADDYFILE >"${PDS_DATADIR}/caddy/etc/caddy/Caddyfile"
 {
-	email ${PDS_ADMIN_EMAIL}
+	email caddy@bigt.ai
 
-
+} 
  
-pds.bigt.ai {
-
-  reverse_proxy pds:3000
-}
-
-appview.bigt.ai {
-
-  reverse_proxy appview:8001
-}
-
 social.bigt.ai {
-  reverse_proxy social-app:8000
+  reverse_proxy http://localhost:8100
 }
 
 
 CADDYFILE
 
-  #
-  # Create the PDS env config
-  #
-  # Created here so that we can use it later in multiple places.
-  PDS_ADMIN_PASSWORD=$(eval "${GENERATE_SECURE_SECRET_CMD}")
-  cat <<PDS_CONFIG >"${PDS_DATADIR}/pds.env"
-PDS_HOSTNAME=${PDS_HOSTNAME}
-PDS_JWT_SECRET=$(eval "${GENERATE_SECURE_SECRET_CMD}")
-PDS_ADMIN_PASSWORD=${PDS_ADMIN_PASSWORD}
-PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX=$(eval "${GENERATE_K256_PRIVATE_KEY_CMD}")
-PDS_DATA_DIRECTORY=${PDS_DATADIR}
-PDS_BLOBSTORE_DISK_LOCATION=${PDS_DATADIR}/blocks
-PDS_BLOB_UPLOAD_LIMIT=52428800
-PDS_DID_PLC_URL=${PDS_DID_PLC_URL}
-PDS_BSKY_APP_VIEW_URL=${PDS_BSKY_APP_VIEW_URL}
-PDS_BSKY_APP_VIEW_DID=${PDS_BSKY_APP_VIEW_DID}
-PDS_REPORT_SERVICE_URL=${PDS_REPORT_SERVICE_URL}
-PDS_REPORT_SERVICE_DID=${PDS_REPORT_SERVICE_DID}
-PDS_CRAWLERS=${PDS_CRAWLERS}
-LOG_ENABLED=true
-PDS_INVITE_REQUIRED=false
-PDS_CONFIG
-
+ 
   #
   # Download and install pds launcher.
   #
-  echo "* Downloading PDS compose file"
+  echo "* Downloading   compose file"
   curl \
     --silent \
     --show-error \
@@ -364,9 +228,7 @@ PDS_CONFIG
     --output "${PDS_DATADIR}/compose.yaml" \
     "${COMPOSE_URL}"
 
-  # Replace the /pds paths with the ${PDS_DATADIR} path.
-  sed --in-place "s|/pds|${PDS_DATADIR}|g" "${PDS_DATADIR}/compose.yaml"
-
+   
   #
   # Create the systemd service.
   #
@@ -404,57 +266,9 @@ SYSTEMD_UNIT_FILE
       ufw allow 443/tcp >/dev/null
     fi
   fi
+ 
 
-  #
-  # Download and install pdadmin.
-  #
-  echo "* Downloading pdsadmin"
-  curl \
-    --silent \
-    --show-error \
-    --fail \
-    --output "/usr/local/bin/pdsadmin" \
-    "${PDSADMIN_URL}"
-  chmod +x /usr/local/bin/pdsadmin
-
-  cat <<INSTALLER_MESSAGE
-========================================================================
-PDS installation successful!
-------------------------------------------------------------------------
-
-Check service status      : sudo systemctl status pds
-Watch service logs        : sudo docker logs -f pds
-Backup service data       : ${PDS_DATADIR}
-PDS Admin command         : pdsadmin
-
-Required Firewall Ports
-------------------------------------------------------------------------
-Service                Direction  Port   Protocol  Source
--------                ---------  ----   --------  ----------------------
-HTTP TLS verification  Inbound    80     TCP       Any
-HTTP Control Panel     Inbound    443    TCP       Any
-
-Required DNS entries
-------------------------------------------------------------------------
-Name                         Type       Value
--------                      ---------  ---------------
-${PDS_HOSTNAME}              A          ${PUBLIC_IP}
-*.${PDS_HOSTNAME}            A          ${PUBLIC_IP}
-
-Detected public IP of this server: ${PUBLIC_IP}
-
-To see pdsadmin commands, run "pdsadmin help"
-
-========================================================================
-INSTALLER_MESSAGE
-
-  CREATE_ACCOUNT_PROMPT="N" 
-
-  if [[ "${CREATE_ACCOUNT_PROMPT}" =~ ^[Yy] ]]; then
-    pdsadmin account create
-  fi
-
-}
+ 
 
 # Run main function.
 main

@@ -1,0 +1,23 @@
+services:
+  caddy:
+    container_name: caddy
+    image: caddy:2
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /pds/caddy/data
+        target: /data
+      - type: bind
+        source: /pds/caddy/etc/caddy
+        target: /etc/caddy
+ 
+  social-app:
+    image: ghcr.io/j0904/social-app:bskyweb-1e620b19cca59f04d33cc04f669514b9b16f8290
+    ports:
+      - "8100:8100"
+    environment:
+      - REACT_APP_PDS_URL=https://pds.bigt.ai
+      - REACT_APP_BSKY_APPVIEW_URL=https://public.api.bsky.app
+
+
