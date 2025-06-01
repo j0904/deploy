@@ -12,7 +12,7 @@ services:
         source: /pds/caddy/etc/caddy
         target: /etc/caddy
  
-  social-app:
+  bsky:
     image: ghcr.io/j0904/atproto:bsky-958dd9a6d0423e059a352c99e9bbb4b77da14eaa
     ports:
       - "2584:2584"
