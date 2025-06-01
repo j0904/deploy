@@ -1,0 +1,25 @@
+services:
+  caddy:
+    container_name: caddy
+    image: caddy:2
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /pds/caddy/data
+        target: /data
+      - type: bind
+        source: /pds/caddy/etc/caddy
+        target: /etc/caddy
+ 
+  social-app:
+    image: ghcr.io/j0904/atproto:bsky-958dd9a6d0423e059a352c99e9bbb4b77da14eaa
+    ports:
+      - "2584:2584"
+    environment:
+      - SKY_DATAPLANE_URLS=http://localhost:4000
+      - BSKY_BSYNC_URL=http://localhost:5000
+      - MOD_SERVICE_DID=did:example:mod
+      - BSKY_SERVICE_SIGNING_KEY=37a6289ce3235aac0c2eb1e4f038ee1175cef1d8d77ac5714fe98b61671d1349
+
+
