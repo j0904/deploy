@@ -51,8 +51,8 @@ PDS_DATADIR="${1:-/pds}"
 PDS_HOSTNAME="${2:-pds.bigt.ai}"
 PDS_ADMIN_EMAIL="${3:-pds@bigt.ai}"
 PDS_DID_PLC_URL="https://plc.directory"
-PDS_BSKY_APP_VIEW_URL="https://api.bsky.app"
-PDS_BSKY_APP_VIEW_DID="did:web:api.bsky.app"
+PDS_BSKY_APP_VIEW_URL="https://bsky.bigt.ai"
+PDS_BSKY_APP_VIEW_DID="did:web:bsky.bigt.ai"
 PDS_REPORT_SERVICE_URL="https://mod.bsky.app"
 PDS_REPORT_SERVICE_DID="did:plc:ar7c4by46qjdydhdevvrndac"
 PDS_CRAWLERS="https://bsky.network"
@@ -309,12 +309,9 @@ DOCKERD_CONFIG
   echo "* Creating Caddy config file"
   cat <<CADDYFILE >"${PDS_DATADIR}/caddy/etc/caddy/Caddyfile"
 {
-	email pds@bigt.ai
-
-
+	email pds@bigt.ai 
 } 
-pds.bigt.ai {
-
+pds.bigt.ai { 
   reverse_proxy http://localhost:3000
 }
 

@@ -181,11 +181,11 @@ PDS_DATADIR=/pds
 	email caddy@bigt.ai
 } 
  
-bsky.bigt.ai, appview.bigt.ai {
+bsky.bigt.ai{
   reverse_proxy http://localhost:2584
 }
 
-bsync.bigt.ai, appview.bigt.ai {
+bsync.bigt.ai {
   reverse_proxy http://localhost:2585
 }
 
