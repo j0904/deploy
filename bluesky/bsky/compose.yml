@@ -18,8 +18,28 @@ services:
       - "2584:2584"
     environment:
       - BSKY_DATAPLANE_URLS=http://localhost:4000
-      - BSKY_BSYNC_URL=http://localhost:5000
-      - MOD_SERVICE_DID=did:example:mod
+      - BSKY_BSYNC_URL=https://bsync.bigt.ai
+      - BSKY_PDS_URL=https://pds.bigt.ai
+      - MOD_SERVICE_DID=did:bigtai:mod
       - BSKY_SERVICE_SIGNING_KEY=37a6289ce3235aac0c2eb1e4f038ee1175cef1d8d77ac5714fe98b61671d1349
 
 
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bsync
+      POSTGRES_PASSWORD: bsyncpass
+      POSTGRES_DB: bsyncdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - /pds/postgres_data:/var/lib/postgresql/data
+
+  bsync:
+    image: ghcr.io/j0904/atproto:bsync-cc25cb7ceacd1d750dd0d7abb9525008170f14b9
+    environment:
+      - DATABASE_URL=postgres://bsync:bsyncpass@postgres:5432/bsyncdb
+    depends_on:
+      - postgres
+    ports:
+      - "2585:2585"

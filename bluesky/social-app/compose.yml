@@ -18,6 +18,6 @@ services:
       - "8100:8100"
     environment:
       - REACT_APP_PDS_URL=https://pds.bigt.ai
-      - REACT_APP_BSKY_APPVIEW_URL=https://public.api.bsky.app
+      - REACT_APP_BSKY_APPVIEW_URL=https://bsky.bigt.ai
 
 

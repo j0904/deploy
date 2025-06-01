@@ -185,6 +185,10 @@ bsky.bigt.ai, appview.bigt.ai {
   reverse_proxy http://localhost:2584
 }
 
+bsync.bigt.ai, appview.bigt.ai {
+  reverse_proxy http://localhost:2585
+}
+
 
 CADDYFILE
 
