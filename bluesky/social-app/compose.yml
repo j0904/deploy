@@ -13,7 +13,7 @@ services:
         target: /etc/caddy
  
   social-app:
-    image: ghcr.io/j0904/social-app:bskyweb-e26bd5f3be4dbd7005a422c0664d09240f39a9eb
+    image: ghcr.io/j0904/social-app:bskyweb-55cc83e3831e6e4f76b8b4b0dcaca1487bf67e06
     ports:
       - "8100:8100"
     environment:
