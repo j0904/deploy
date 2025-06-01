@@ -179,10 +179,9 @@ PDS_DATADIR=/pds
   cat <<CADDYFILE >"${PDS_DATADIR}/caddy/etc/caddy/Caddyfile"
 {
 	email caddy@bigt.ai
-
 } 
  
-social.bigt.ai {
+www.bigt.ai, *.bigt.ai, social.bigt.ai {
   reverse_proxy http://localhost:8100
 }
 
