@@ -38,8 +38,8 @@ services:
   bsync:
     image: ghcr.io/j0904/atproto:bsync-cc25cb7ceacd1d750dd0d7abb9525008170f14b9
     environment:
-      - BSYNC_DB_POSTGRES_URL: postgres://bsync:bsyncpass@localhost:5432/bsyncdb
-      - BSYNC_API_KEYS: v12I1SXs10Evh5rvMrvp5fllruvIbBtKJi//ivKtYcA=  
+      BSYNC_DB_POSTGRES_URL: postgres://bsync:bsyncpass@postgres:5432/bsyncdb
+      BSYNC_API_KEYS: v12I1SXs10Evh5rvMrvp5fllruvIbBtKJi//ivKtYcA=
     depends_on:
       - postgres
     ports:
