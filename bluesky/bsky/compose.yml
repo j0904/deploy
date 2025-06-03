@@ -22,6 +22,7 @@ services:
       - BSKY_PDS_URL=https://pds.bigt.ai
       - MOD_SERVICE_DID=did:bigtai:mod
       - BSKY_SERVICE_SIGNING_KEY=37a6289ce3235aac0c2eb1e4f038ee1175cef1d8d77ac5714fe98b61671d1349
+      - LOG_ENABLED=true
 
 
   postgres:
@@ -40,6 +41,7 @@ services:
     environment:
       BSYNC_DB_POSTGRES_URL: postgres://bsync:bsyncpass@postgres:5432/bsyncdb
       BSYNC_API_KEYS: v12I1SXs10Evh5rvMrvp5fllruvIbBtKJi//ivKtYcA=
+      LOG_ENABLED: true
     depends_on:
       - postgres
     ports:
