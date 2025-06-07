@@ -20,9 +20,13 @@ services:
       - BSKY_DATAPLANE_URLS=http://localhost:4000
       - BSKY_BSYNC_URL=https://bsync.bigt.ai
       - BSKY_PDS_URL=https://pds.bigt.ai
-      - MOD_SERVICE_DID=did:bigtai:mod
+      - MOD_SERVICE_DID=did:bigt.ai:mod
       - BSKY_SERVICE_SIGNING_KEY=37a6289ce3235aac0c2eb1e4f038ee1175cef1d8d77ac5714fe98b61671d1349
       - LOG_ENABLED=true
+      - BSKY_PUBLIC_URL=https://bsky.bigt.ai
+      - BSKY_DISABLE_SSRF_PROTECTION="true"
+# Database Configuration
+      - DATABASE_URL=postgres://bsync:bsyncpass@postgres:5432/bsyncdb
 
 
   postgres:
