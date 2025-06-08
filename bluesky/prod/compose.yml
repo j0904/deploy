@@ -1,0 +1,125 @@
+version: '3.8'
+services:
+  plc:
+    image: ghcr.io/j0904/atproto:plc-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "plc"]
+    ports:
+      - "2582:2582"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on: []
+
+  pds:
+    image: ghcr.io/j0904/atproto:pds-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "pds"]
+    ports:
+      - "2583:2583"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    volumes:
+      - ${DATAPATH:-/data/vm/}pds-data:/pds
+    depends_on:
+      - plc
+
+  bsky:
+    image: ghcr.io/j0904/atproto:bsky-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "bsky"]
+    ports:
+      - "2584:2584"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on:
+      - pds
+      - plc
+
+  ozone:
+    image: ghcr.io/j0904/atproto:ozone-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "ozone"]
+    ports:
+      - "2587:2587"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on:
+      - bsky
+      - pds
+      - plc
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: atproto
+      POSTGRES_PASSWORD: atproto
+      POSTGRES_DB: atproto
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${DATAPATH:-/data/vm/}pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${DATAPATH:-/data/vm/}/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - plc
+      - pds
+      - bsky
+      - ozone
+    restart: unless-stopped
+
+  feed-gen:
+    image: ghcr.io/j0904/atproto:feed-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "feed"]
+    ports:
+      - "2585:2585"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on:
+      - plc
+      - pds
+      - bsky
+
+  sync:
+    image: ghcr.io/j0904/atproto:sync-latest
+    command: ["node", "./packages/dev-env/dist/prod.js", "sync"]
+    ports:
+      - "2592:2592"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on:
+      - plc
+      - pds
+      - bsky
+caddy:
+    container_name: caddy
+    image: caddy:2
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ${DATAPATH:-/data/vm/}/caddy/data
+        target: /data
+      - type: bind
+        source: ${DATAPATH:-/data/vm/}/caddy/etc/caddy
+        target: /etc/caddy
