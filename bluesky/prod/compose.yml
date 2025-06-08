@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   plc:
-    image: ghcr.io/j0904/atproto:plc-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "plc"]
     ports:
       - "2582:2582"
@@ -12,7 +12,7 @@ services:
     depends_on: []
 
   pds:
-    image: ghcr.io/j0904/atproto:pds-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "pds"]
     ports:
       - "2583:2583"
@@ -26,7 +26,7 @@ services:
       - plc
 
   bsky:
-    image: ghcr.io/j0904/atproto:bsky-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "bsky"]
     ports:
       - "2584:2584"
@@ -39,7 +39,7 @@ services:
       - plc
 
   ozone:
-    image: ghcr.io/j0904/atproto:ozone-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "ozone"]
     ports:
       - "2587:2587"
@@ -76,16 +76,16 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ${DATAPATH:-/data/vm/}/Caddyfile:/etc/caddy/Caddyfile:ro
-    depends_on:
-      - plc
-      - pds
-      - bsky
-      - ozone
+      - type: bind
+        source: ${DATAPATH:-/data/vm/}/caddy/data
+        target: /data
+      - type: bind
+        source: ${DATAPATH:-/data/vm/}/caddy/etc/caddy
+        target: /etc/caddy
     restart: unless-stopped
 
   feed-gen:
-    image: ghcr.io/j0904/atproto:feed-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "feed"]
     ports:
       - "2585:2585"
@@ -99,7 +99,7 @@ services:
       - bsky
 
   sync:
-    image: ghcr.io/j0904/atproto:sync-latest
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
     command: ["node", "./packages/dev-env/dist/prod.js", "sync"]
     ports:
       - "2592:2592"
@@ -111,15 +111,4 @@ services:
       - plc
       - pds
       - bsky
-caddy:
-    container_name: caddy
-    image: caddy:2
-    network_mode: host
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: ${DATAPATH:-/data/vm/}/caddy/data
-        target: /data
-      - type: bind
-        source: ${DATAPATH:-/data/vm/}/caddy/etc/caddy
-        target: /etc/caddy
+ 
