@@ -18,7 +18,8 @@ wsdump "wss://pds.bigt.ai/xrpc/com.atproto.sync.subscribeRepos?cursor=0"
    curl https://raw.githubusercontent.com/j0904/deploy/main/bluesky/prod/installer.sh >installer.sh
   sudo bash installer.sh
 
-
+   curl https://raw.githubusercontent.com/j0904/deploy/main/bluesky/prod2/installer.sh >installer.sh
+  sudo bash installer.sh
 
   2.1 Add DNS TXT Record
 txt

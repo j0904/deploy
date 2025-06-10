@@ -65,3 +65,29 @@ services:
         source: ${DATAPATH:-/data/vm/}/caddy/etc/caddy
         target: /etc/caddy
     restart: unless-stopped
+
+  feed-gen:
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
+    command: ["node", "./packages/dev-env/dist/prod.js", "feed"]
+    ports:
+      - "2585:2585"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+    depends_on:
+      - plc
+      - pds
+      - bsky
+  ozone:
+    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
+    command: ["node", "./packages/dev-env/dist/prod.js", "ozone"]
+    ports:
+      - "2587:2587"
+    environment:
+      - NODE_ENV=production
+      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
+      - REDIS_HOST=redis
+
+
+ 

@@ -182,43 +182,32 @@ DATAPATH=/data/vm/
 {
 	email deploy@bigt.ai
 }
-
-
-# HTTP to HTTPS redirect
-:80 {
-  redir https://{host}{uri} permanent
-}
-
+ 
+ 
 # PLC service
 plc.bigt.ai, plc {
-  reverse_proxy plc:2582
+  reverse_proxy http://localhost:2582
 }
 
 # PDS service
 pds.bigt.ai, pds {
-  reverse_proxy pds:2583
+  reverse_proxy http://localhost:2583
 }
 
 # Bsky Appview
 bsky.bigt.ai, bsky {
-  reverse_proxy bsky:2584
+  reverse_proxy http://localhost:2584
 }
 
 # Ozone service
 ozone.bigt.ai, ozone {
-  reverse_proxy ozone:2587
+  reverse_proxy http://localhost:2587
 }
-
-
-# Sync service
-sync.bigt.ai, sync {
-  reverse_proxy sync:2592
-}
-
+ 
 
 # Feed Generator service
 feed-gen.bigt.ai, feed-gen {
-  reverse_proxy feed-gen:2585
+  reverse_proxy http://localhost:2585
 }
 
 
