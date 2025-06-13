@@ -34,5 +34,5 @@ services:
     restart: unless-stopped
   prod:
     image: ghcr.io/j0904/atproto:prod-84885047dfa6f55b96026990efceb02680dff3d3
-    command: ["node", "./packages/dev-env/dist/prod.js"] 
+    command: ["node", "./packages/prod-env/dist/prod.js"] 
  

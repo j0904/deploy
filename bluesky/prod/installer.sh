@@ -185,12 +185,12 @@ DATAPATH=/data/vm/
  
  
 # PLC service
-plc.bigt.ai{
+plc.bigt.ai {
   reverse_proxy http://localhost:2582
 }
 
 # PDS service
-pds.bigt.ai{
+prod.bigt.ai {
   reverse_proxy http://localhost:2583
 }
 
@@ -200,7 +200,7 @@ bsky.bigt.ai {
 }
 
 # Ozone service
-ozone.bigt.ai{
+ozone.bigt.ai {
   reverse_proxy http://localhost:2587
 }
  
