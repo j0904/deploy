@@ -185,30 +185,25 @@ DATAPATH=/data/vm/
  
  
 # PLC service
-plc.bigt.ai, plc {
+plc.bigt.ai{
   reverse_proxy http://localhost:2582
 }
 
 # PDS service
-pds.bigt.ai, pds {
+pds.bigt.ai{
   reverse_proxy http://localhost:2583
 }
 
 # Bsky Appview
-bsky.bigt.ai, bsky {
+bsky.bigt.ai {
   reverse_proxy http://localhost:2584
 }
 
 # Ozone service
-ozone.bigt.ai, ozone {
+ozone.bigt.ai{
   reverse_proxy http://localhost:2587
 }
  
-
-# Feed Generator service
-feed-gen.bigt.ai, feed-gen {
-  reverse_proxy http://localhost:2585
-}
 
 
 # Default fallback (optional)

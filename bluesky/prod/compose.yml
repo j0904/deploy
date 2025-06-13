@@ -1,38 +1,5 @@
 version: '3.8'
-services:
-  plc:
-    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
-    command: ["node", "./packages/dev-env/dist/prod.js", "plc"]
-    ports:
-      - "2582:2582"
-    environment:
-      - NODE_ENV=production
-      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
-      - REDIS_HOST=redis
-    depends_on: []
-
-  pds:
-    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
-    command: ["node", "./packages/dev-env/dist/prod.js", "pds"]
-    ports:
-      - "2583:2583"
-    environment:
-      - NODE_ENV=production
-      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
-      - REDIS_HOST=redis
-    volumes:
-      - ${DATAPATH:-/data/vm/}pds-data:/pds
-
-  bsky:
-    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
-    command: ["node", "./packages/dev-env/dist/prod.js", "bsky"]
-    ports:
-      - "2584:2584"
-    environment:
-      - NODE_ENV=production
-      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
-      - REDIS_HOST=redis
-
+services: 
 
   redis:
     image: redis:7-alpine
@@ -65,29 +32,7 @@ services:
         source: ${DATAPATH:-/data/vm/}/caddy/etc/caddy
         target: /etc/caddy
     restart: unless-stopped
-
-  feed-gen:
-    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
-    command: ["node", "./packages/dev-env/dist/prod.js", "feed"]
-    ports:
-      - "2585:2585"
-    environment:
-      - NODE_ENV=production
-      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
-      - REDIS_HOST=redis
-    depends_on:
-      - plc
-      - pds
-      - bsky
-  ozone:
-    image: ghcr.io/j0904/atproto:prod-6b6b4dd7a25c8433b8ea4cbce221b75d162d906a
-    command: ["node", "./packages/dev-env/dist/prod.js", "ozone"]
-    ports:
-      - "2587:2587"
-    environment:
-      - NODE_ENV=production
-      - DB_POSTGRES_URL=postgres://atproto:atproto@postgres:5432/atproto
-      - REDIS_HOST=redis
-
-
+  prod:
+    image: ghcr.io/j0904/atproto:prod-84885047dfa6f55b96026990efceb02680dff3d3
+    command: ["node", "./packages/dev-env/dist/prod.js"] 
  
