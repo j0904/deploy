@@ -18,6 +18,12 @@ services:
     volumes:
       - ${DATAPATH:-/data/vm/}pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+           # Healthcheck ensures db is queryable when `docker-compose up --wait` completes
+    healthcheck:
+      test: 'pg_isready -U pg'
+      interval: 500ms
+      timeout: 10s
+      retries: 20
 
   caddy:
     image: caddy:2-alpine
@@ -34,5 +40,12 @@ services:
     restart: unless-stopped
   prod:
     image: ghcr.io/j0904/atproto:prod-84885047dfa6f55b96026990efceb02680dff3d3
+    environment:
+      DB_POSTGRES_URL: postgres://atproto:atproto@postgres:5432/atproto
     command: ["node", "./packages/prod-env/dist/prod.js"] 
- 
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "2583:2583"
+      - "2584:2584"  
