@@ -310,12 +310,17 @@ DOCKERD_CONFIG
   cat <<CADDYFILE >"${PDS_DATADIR}/caddy/etc/caddy/Caddyfile"
 {
 	email pds@bigt.ai 
-} 
-pds.bigt.ai { 
-  reverse_proxy http://localhost:3000
+  on_demand_tls {
+		ask http://localhost:3000/tls-check
+	}
 }
 
-
+*.${PDS_HOSTNAME}, ${PDS_HOSTNAME} {
+	tls {
+		on_demand
+	}
+	reverse_proxy http://localhost:3000
+}
 CADDYFILE
 
   #
