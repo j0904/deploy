@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bluesky-postgres
+    environment:
+      POSTGRES_USER: bsky
+      POSTGRES_PASSWORD: yksb
+      POSTGRES_DB: plc_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  plc:
+    image: ghcr.io/j0904/did-method-plc:plc-78918a9a178cb4aa9d0fa9990424a025eb513927
+    container_name: bluesky-plc
+    depends_on:
+      - postgres
+    environment:
+      PLC_PORT: 2582
+      DB_CREDS_JSON: '{"host":"postgres","port":5432,"user":"bsky","password":"yksb","database":"plc_dev"}'
+    ports:
+      - "2582:2582"
+ 
+
+  pds:
+    image: ghcr.io/bluesky-social/pds:0.4
+    depends_on:
+      - postgres
+      - plc
+    env_file:
+      - pds.env
+  
+    ports:
+      - "2583:2583"
+    volumes:
+      - pdsdata:/pds
+
+  relay:
+    image: ghcr.io/j0904/indigo:replay-3859d4fd900da2ae017ef7675b129e6a90255d59
+    container_name: bluesky-relay
+    depends_on:
+      - pds
+    environment:
+      RELAY_PORT: 8080
+      RELAY_PDS_URL: "http://pds:2583"
+    ports:
+      - "8080:8080"
+ 
+
+volumes:
+  pgdata:
+  pdsdata:
